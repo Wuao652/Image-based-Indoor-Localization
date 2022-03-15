@@ -20,3 +20,5 @@ def generateIntrinsics():
 # intrinsics['IntrinsicMatrix'] = [[1037.575214664696,    0.               ,      0.],
 #                                  [0.               ,    1043.315752317925,      0.],
 #                                  [642.2315830312182,	387.8357750962377,  	1.]]
+if __name__ == '__main__':
+    intrinsics = generateIntrinsics()
