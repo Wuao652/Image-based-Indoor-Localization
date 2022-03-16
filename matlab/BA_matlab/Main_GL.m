@@ -76,7 +76,7 @@ result_orient_var   = [];
 result_reprojecterror = [];
 % global_rotation = eye(3,3);global_translation = [0 0 0];
 %  num_gap = 10;
-num_gap = 1;
+num_gap = 10;
 for i = 1 :num_gap: 2000%size(pose_ID_predict{end},2)%size(pose_ID_predict{end},2)
     
     locID = i;
@@ -84,8 +84,10 @@ for i = 1 :num_gap: 2000%size(pose_ID_predict{end},2)%size(pose_ID_predict{end},
     
 %     pickControlPoints( image1,image2,cameraIntrinsicParam );
     observe_ith = cell(size(pose_ID_predict{end},1),1);
+% size(pose_ID_predict{end},1)==5
     param       = cell(size(pose_ID_predict{end},1),1);
     num_matching = zeros(size(pose_ID_predict{end},1),1);
+    % for j = 1 : size(pose_ID_predict{end},1)
     for j = 1 : 1%size(pose_ID_predict{end},1)
         locID_init = round(pose_ID_predict{end}(j,i));
         if(locID_init <= 0)
@@ -178,7 +180,7 @@ end
 %%
 figure(1);
 plot(X_fig,error_angle,X_fig,error_angle_init);
-legend('error angle','error dis_init')
+legend('error angle','error angle init')
 xlabel('Key frame ID')
 ylabel('Angle difference (Degree)')
 
@@ -188,13 +190,21 @@ legend('error dis','error dis init')
 xlabel('Key frame ID')
 ylabel('Positional difference (mm)')
 
+% error_dis(error_dis>10)=0;
+% disp('Overall accuracy:   Error_dis    Error_dis_init       Error_angle     Error_angle_init    ');
+% disp([mean(error_dis) mean(error_dis_init) mean(error_angle) mean(error_angle_init)]);
+% ind = (error_dis == error_dis_init);
+% error_dis(ind)=0;error_dis_init(ind)=0;error_angle(ind)=0;error_angle_init(ind)=0;
+% disp('Improved accuracy	:   Error_dis    Error_dis_init       Error_angle     Error_angle_init    ');
+% disp([mean(error_dis) mean(error_dis_init) mean(error_angle) mean(error_angle_init)]);
+
 error_dis(error_dis>10)=0;
 disp('Overall accuracy:   Error_dis    Error_dis_init       Error_angle     Error_angle_init    ');
-disp([mean(error_dis) mean(error_dis_init) mean(error_angle) mean(error_angle_init)]);
+disp([median(error_dis) median(error_dis_init) median(error_angle) median(error_angle_init)]);
 ind = (error_dis == error_dis_init);
 error_dis(ind)=0;error_dis_init(ind)=0;error_angle(ind)=0;error_angle_init(ind)=0;
 disp('Improved accuracy	:   Error_dis    Error_dis_init       Error_angle     Error_angle_init    ');
-disp([mean(error_dis) mean(error_dis_init) mean(error_angle) mean(error_angle_init)]);
+disp([median(error_dis) median(error_dis_init) median(error_angle) median(error_angle_init)]);
 
 
 % trisurf ( obj.f.v, obj.v(:,1), obj.v(:,2), obj.v(:,3));
