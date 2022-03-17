@@ -121,6 +121,7 @@ switch dataset_name
            groundtruth.robotpose(i,:) = [str2double(mtl_name{2,1}) str2double(mtl_name{3,1}) str2double(mtl_name{4,1})];
            tmp = [str2double(mtl_name{8,1}) str2double(mtl_name{5,1}) str2double(mtl_name{6,1}) str2double(mtl_name{7,1})  ];
            groundtruth.orientation(3*i-2:3*i,:)=quat2rotm(tmp);
+           groundtruth.orientation(3*i-2:3*i,:)=groundtruth.orientation(3*i-2:3*i,:)';
            i = i + 1;
 
         end
@@ -145,7 +146,7 @@ switch dataset_name
            history.robotpose(i,:) = [str2double(mtl_name{2,1}) str2double(mtl_name{3,1}) str2double(mtl_name{4,1})];
            tmp = [str2double(mtl_name{8,1}) str2double(mtl_name{5,1}) str2double(mtl_name{6,1}) str2double(mtl_name{7,1}) ];
            history.orientation(3*i-2:3*i,:)=quat2rotm(tmp);
-
+           history.orientation(3*i-2:3*i,:)=history.orientation(3*i-2:3*i,:)';
            i = i + 1;
         end
         fclose(fid);
