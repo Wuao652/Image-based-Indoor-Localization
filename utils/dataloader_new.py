@@ -53,7 +53,7 @@ def load_TUM_data(scene):
     filename = path + "/posenet_training_output/cdf/chess_train__siamese_FXPAL_output_1.h5py"
     with h5py.File(filename, "r") as f:
         file_list = list(f.keys())
-        posenet_x_predicted = np.array(f[file_list[1]])
+        posenet_x_predicted = np.array(f[file_list[1]]).reshape(-1)
     print('=>>>>>>>>>>>>>>>>>>>>>>Loading dataset finished')
     return data_dict, posenet_x_predicted
 if __name__ == '__main__':
