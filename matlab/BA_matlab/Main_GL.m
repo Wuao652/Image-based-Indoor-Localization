@@ -10,8 +10,8 @@ clc;clear all;
 % dataset_name = 'TUM';
 % subdataset = '2_large_with_loop';
 
-dataset_name = '7scenes';
-subdataset = 'chess';
+dataset_name = 'TUM';
+subdataset = '1_desk2';
 % ===========================   Option record video     =========  %
 bool_recordvideo = false;
 % =====#debug=====#debug=====#debug=====#debug=====#debug==========  %
@@ -77,7 +77,7 @@ result_reprojecterror = [];
 % global_rotation = eye(3,3);global_translation = [0 0 0];
 %  num_gap = 10;
 num_gap = 10;
-for i = 1 :num_gap: 2000%size(pose_ID_predict{end},2)%size(pose_ID_predict{end},2)
+for i = 1 :num_gap: 100%size(pose_ID_predict{end},2)%size(pose_ID_predict{end},2)
     
     locID = i;
     disp(['Step: ', num2str(locID)]);

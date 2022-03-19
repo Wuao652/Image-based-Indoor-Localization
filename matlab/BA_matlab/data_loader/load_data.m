@@ -19,7 +19,7 @@ switch dataset_name
     case 'TUM'
         disp(['Loading TUM data set ' subdataset]);
        %%
-       driverpath = 'F:\dataset\FXPAL\dataset_TUM\rgbd_dataset_freiburg';
+       driverpath = '/home/dennis/SfM-demo/data/TUM/';
        TUM_camera_ID = str2double(subdataset(1));
        switch TUM_camera_ID
            case 1
@@ -29,12 +29,12 @@ switch dataset_name
            otherwise
                error('TUM data set error')
        end
-       filepath = [driverpath subdataset '\sequences\01\image_'];
-       posepath = [driverpath subdataset '\01.txt'];
-       filepath_history = [driverpath subdataset '\sequences\00\image_'];
-       posepath_history = [driverpath subdataset '\00.txt'];
+       filepath = [driverpath subdataset '/sequences/01/image_'];
+       posepath = [driverpath subdataset '/01.txt'];
+       filepath_history = [driverpath subdataset '/sequences/00/image_'];
+       posepath_history = [driverpath subdataset '/00.txt'];
        
-       FILENAME_BASE = [driverpath subdataset '\posenet_training_output\cdf\chess_train__siamese_TUM_output'];
+       FILENAME_BASE = [driverpath subdataset '/posenet_training_output/cdf/chess_train__siamese_FXPAL_output'];
        for i = 1 : 2
            filename = [FILENAME_BASE '_' int2str(i-1) '.h5py'];
            pose_ID_groudtruth{i} = h5read(filename,'/posenet_x_label');
@@ -42,8 +42,8 @@ switch dataset_name
        end
        
        fid = fopen(posepath);
-       groundtruth.robotpose = zeros(1000,3);
-       groundtruth.orientation = zeros(3*1000,3);
+       groundtruth.robotpose = zeros(100,3);
+       groundtruth.orientation = zeros(3*100,3);
        i = 1;
        while 1
            tline = fgetl(fid);
@@ -66,8 +66,8 @@ switch dataset_name
        
        
        fid = fopen(posepath_history);
-       history.robotpose = zeros(1000,3);
-       history.orientation = zeros(3*1000,3);
+       history.robotpose = zeros(540,3);
+       history.orientation = zeros(3*540,3);
        i = 1;
        while 1
            tline = fgetl(fid);
