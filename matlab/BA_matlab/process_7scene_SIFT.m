@@ -5,7 +5,7 @@ function [ observe_ith,param] = process_7scene_SIFT(history,cameraParams,observe
 %   Select images for triangulation
 ind_neighbor = selectimage(history.orientation,history.robotpose,locID_init,param_keyframe.bm,param_keyframe.sigma,param_keyframe.alpha_m,num_image,param_keyframe.max_range);
 
-
+disp(ind_neighbor)
 
 num_image_left = (num_image - 1) / 2;
 nImgLst = cell(2*num_image_left+2,1);
