@@ -1,6 +1,5 @@
 .idea/
 utils/__pycache__
-test.py
 chess_train__siamese_FXPAL_output_0.h5py
 chess_train__siamese_FXPAL_output_1.h5py
 matlab/BA_matlab/Main_GL.m~
