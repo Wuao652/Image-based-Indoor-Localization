@@ -7,6 +7,8 @@ import numpy as np
 from numpy import sin, cos
 from scipy.linalg import expm, logm
 
+
+
 def skew(x):
     '''
     skew function, R^3 -> so(3)
@@ -39,19 +41,16 @@ def unskew(X):
         X: 3x3 numpy array
     '''
 
-    x = np.array([X(2, 1), X(0, 2), X(1, 0)])
+    x = np.array([X[2, 1], X[0, 2], X[1, 0]])
     return x
 
 
-def getinvskew(skew_matrix):
+def getinvskew(X):
     '''
     The same as unskew(x)
     '''
 
-    x = np.zeros(3)
-    x[0] = - skew_matrix[1, 2]
-    x[1] = skew_matrix[0, 2]
-    x[2] = - skew_matrix[0, 1]
+    x = np.array([-X[1, 2], X[0, 2], -X[0, 1]])
     return x
 
 
@@ -235,3 +234,16 @@ def disDifference(pt1, pt2):
     pt2 = pt2.reshape(-1)
     tmp = pt1 - pt2
     return np.linalg.norm(tmp)
+
+
+
+if __name__ == '__main__':
+    # test cases
+    # skew, getskew, unskew, getinvskew
+    x = np.array([1, 1, 1])
+    skew_x = skew(x)
+    print(skew_x)
+    print(getskew(x))
+
+    print(unskew(skew_x))
+    print(getinvskew(skew_x))
