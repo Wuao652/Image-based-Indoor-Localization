@@ -66,6 +66,7 @@ if __name__ == "__main__":
     # create tracks to record the total matched pairs
     tracks = dict()
 
+    # load the test image
     Iprev = cv2.imread(nImgList[0])
     Iprev = cv2.cvtColor(Iprev, cv2.COLOR_BGR2GRAY)
     kp1, des1 = sift.detectAndCompute(Iprev, None)
@@ -86,13 +87,15 @@ if __name__ == "__main__":
             pt = kp2[trainIdx].pt
             tracks[queryIdx].append((nImgIndList[i-1], pt))
 
-    print(tracks)
-    
+    print("The total matching results:")
+    print(len(tracks))
     # filter out the tracks with less than 2 points
     for k in list(tracks.keys()):
         if len(tracks[k]) < 2:
             del tracks[k]
 
+    print("The tracks after the filter")
+    print(len(tracks))
     # add the camera pose
     camParams = generateIntrinsics()
     camPoses = list()
@@ -104,6 +107,7 @@ if __name__ == "__main__":
 
 
     xyz, errors = triangulateMultiView(tracks, camPoses, camParams)
+
     print(xyz)
     print(errors)
     plt.figure()
