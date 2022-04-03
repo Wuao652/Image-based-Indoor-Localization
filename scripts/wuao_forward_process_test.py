@@ -7,6 +7,9 @@ from utils.cameraParams import generateIntrinsics
 from utils.vl_func import vl_ubcmatch
 import matplotlib.pyplot as plt
 
+import warnings
+warnings.filterwarnings("ignore")
+
 def plot_imgs(images):
     """
     :param images:
@@ -74,33 +77,32 @@ if __name__ == "__main__":
     print(len(kp3))
 
     # Here is an example on how to use vl_ubcmatch
-    # ubc_matches = vl_ubcmatch(des1, des2)
+    matches = vl_ubcmatch(des1, des2)
+    matches1 = vl_ubcmatch(des1, des3)
 
-    bf = cv2.BFMatcher()
-    # Use these two matches to get a track
-    matches = bf.match(des1, des2)
-    matches1 = bf.match(des1, des3)
+
 
     # Loop all the key points in test image
     tracks = dict()
 
-    # for j in range(10):
-    #     print(matches[j].queryIdx)
-    #     print(matches1[j].queryIdx)
-
-    # for i in range(len(kp1)):
-    for i in range(3): # test 3 points only
+    for i in range(len(kp1)):
         tracks[i] = list()
 
-        id = matches[i].trainIdx
-        pt = kp2[id].pt
-        tracks[i].append((nImgIndList[0], pt))
+    # test the first match only
+    for j in range(matches.shape[0]):
+        queryIdx, trainIdx = matches[j]
+        pt = kp2[trainIdx].pt
+        tracks[queryIdx].append((nImgIndList[0], pt))
 
-        id = matches1[i].trainIdx
-        pt = kp3[id].pt
-        tracks[i].append((nImgIndList[1], pt))
+    for j in range(matches1.shape[0]):
+        queryIdx, trainIdx = matches1[j]
+        pt = kp3[trainIdx].pt
+        tracks[queryIdx].append((nImgIndList[1], pt))
     print(tracks)
 
+    for k in list(tracks.keys()):
+        if tracks[k] == []:
+            del tracks[k]
     camParams = generateIntrinsics()
     camPoses = list()
     camPoses.append({'ViewId': nImgIndList[0],
@@ -116,7 +118,7 @@ if __name__ == "__main__":
     xyz, errors = triangulateMultiView(tracks, camPoses, camParams)
     print(xyz)
     print(errors)
-
-    # pts_1, pts_2 = np.array(pts_1), np.array(pts_2)
-    # match_plot = cv2.drawMatches(Iprev, kp1, Ipost, kp2, matches, None, flags=2)
-    # plt.imshow(match_plot), plt.show()
+    plt.figure()
+    plt.axes(projection='3d')
+    plt.scatter(xyz[:, 0], xyz[:, 1], xyz[:, 2])
+    plt.show()
