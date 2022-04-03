@@ -87,9 +87,10 @@ if __name__ == "__main__":
             tracks[queryIdx].append((nImgIndList[i-1], pt))
 
     print(tracks)
-    # delete the unmatched tracks
+    
+    # filter out the tracks with less than 2 points
     for k in list(tracks.keys()):
-        if tracks[k] == []:
+        if len(tracks[k]) < 2:
             del tracks[k]
 
     # add the camera pose
