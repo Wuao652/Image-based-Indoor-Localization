@@ -59,61 +59,48 @@ if __name__ == "__main__":
     nImgList = [data_dict['test_images'][i]] + [data_dict['train_images'][i] for i in nImgIndList]
     print("Start to load img")
     # plot_imgs(nImgList)
-    Iprev = cv2.imread(nImgList[0])
-    Iprev = cv2.cvtColor(Iprev, cv2.COLOR_BGR2GRAY)
-    Ipost = cv2.imread(nImgList[1])
-    Ipost = cv2.cvtColor(Ipost, cv2.COLOR_BGR2GRAY)
-    Ipost1 = cv2.imread(nImgList[2])
-    Ipost1 = cv2.cvtColor(Ipost1, cv2.COLOR_BGR2GRAY)
 
-# opencv
+    # init cv2.sift feature extractor
     sift = cv2.SIFT_create(nOctaveLayers=6, edgeThreshold=20)
-    kp1, des1 = sift.detectAndCompute(Iprev, None)
-    kp2, des2 = sift.detectAndCompute(Ipost, None)
-    kp3, des3 = sift.detectAndCompute(Ipost1, None)
 
-    print(len(kp1))
-    print(len(kp2))
-    print(len(kp3))
-
-    # Here is an example on how to use vl_ubcmatch
-    matches = vl_ubcmatch(des1, des2)
-    matches1 = vl_ubcmatch(des1, des3)
-
-
-
-    # Loop all the key points in test image
+    # create tracks to record the total matched pairs
     tracks = dict()
 
+    Iprev = cv2.imread(nImgList[0])
+    Iprev = cv2.cvtColor(Iprev, cv2.COLOR_BGR2GRAY)
+    kp1, des1 = sift.detectAndCompute(Iprev, None)
+
+    # Loop all the key points in test image
     for i in range(len(kp1)):
         tracks[i] = list()
 
-    # test the first match only
-    for j in range(matches.shape[0]):
-        queryIdx, trainIdx = matches[j]
-        pt = kp2[trainIdx].pt
-        tracks[queryIdx].append((nImgIndList[0], pt))
+    for i in range(1, len(nImgList)):
+        Ipost = cv2.imread(nImgList[i])
+        Ipost = cv2.cvtColor(Ipost, cv2.COLOR_BGR2GRAY)
+        kp2, des2 = sift.detectAndCompute(Ipost, None)
+        matches = vl_ubcmatch(des1, des2)
 
-    for j in range(matches1.shape[0]):
-        queryIdx, trainIdx = matches1[j]
-        pt = kp3[trainIdx].pt
-        tracks[queryIdx].append((nImgIndList[1], pt))
+        # TODO: add RANSAC to eliminate the outliers
+        for j in range(matches.shape[0]):
+            queryIdx, trainIdx = matches[j]
+            pt = kp2[trainIdx].pt
+            tracks[queryIdx].append((nImgIndList[i-1], pt))
+
     print(tracks)
-
+    # delete the unmatched tracks
     for k in list(tracks.keys()):
         if tracks[k] == []:
             del tracks[k]
+
+    # add the camera pose
     camParams = generateIntrinsics()
     camPoses = list()
-    camPoses.append({'ViewId': nImgIndList[0],
-                     'Orientation': data_dict['train_orientation'][nImgIndList[0]],
-                     'Location': data_dict['train_position'][nImgIndList[0]]})
-
-    camPoses.append({'ViewId': nImgIndList[1],
-                     'Orientation': data_dict['train_orientation'][nImgIndList[1]],
-                     'Location': data_dict['train_position'][nImgIndList[1]]})
-
+    for c in range(len(nImgIndList)):
+        camPoses.append({'ViewId': nImgIndList[c],
+                         'Orientation': data_dict['train_orientation'][nImgIndList[c]],
+                         'Location': data_dict['train_position'][nImgIndList[c]]})
     print(camPoses)
+
 
     xyz, errors = triangulateMultiView(tracks, camPoses, camParams)
     print(xyz)
@@ -121,4 +108,6 @@ if __name__ == "__main__":
     plt.figure()
     plt.axes(projection='3d')
     plt.scatter(xyz[:, 0], xyz[:, 1], xyz[:, 2])
+    plt.xlim([-8, 4])
+    plt.ylim([-8, 4])
     plt.show()
