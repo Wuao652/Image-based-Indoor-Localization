@@ -132,8 +132,9 @@ if __name__ == "__main__":
 
     print(camPoses)
 
-    xyz = triangulateMultiView(tracks, camPoses, camParams)
+    xyz, errors = triangulateMultiView(tracks, camPoses, camParams)
     print(xyz)
+    print(errors)
 
     # pts_1, pts_2 = np.array(pts_1), np.array(pts_2)
     # match_plot = cv2.drawMatches(Iprev, kp1, Ipost, kp2, matches, None, flags=2)
