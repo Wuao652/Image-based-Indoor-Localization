@@ -36,19 +36,43 @@ def triangulateOnePoint(track, cameraMatrices):
         A[idx:idx+2, :] = points[i].reshape(-1, 1) * P[2, :] - P[0:2, :]
 
     _, _, V = np.linalg.svd(A)
+    V = V.T
     X = V[:, -1]
     X = X/X[-1]
 
     return X[0:3]
 
 
+def reprojectPoint(p3dh, viewIds, cameraMatrices):
+    numPoints = len(viewIds)
+    points2d = np.zeros((numPoints, 2))
+    for i in range(numPoints):
+        p2dh = p3dh @ cameraMatrices[viewIds[i]]
+        points2d[i, :] = p2dh[0:2]/p2dh[2]
+
+    return points2d
+
 
 def reprojectionErrors(points3d, cameraMatrices, tracks):
-    pass
+    numPoints = points3d.shape[0]
+    points3dh = np.hstack([points3d, np.ones((numPoints, 1))])
+    meanErrorsPerTrack = np.zeros((numPoints, 1))
+    errors = []
+    for i in range(numPoints):
+        p3d = points3dh[i, :]
 
+        track = list(tracks.values())[i]
+        viewIds = np.array([e[0] for e in track])
+        points  = np.array([e[1] for e in track])
 
-def reprojectPoint(p3dh, viewIds, cameraMatrices):
-    pass
+        reprojPoints2D = reprojectPoint(p3d, viewIds, cameraMatrices)
+        e = np.sqrt(((points - reprojPoints2D)**2).sum(1))
+        # print(e)
+        meanErrorsPerTrack[i] = e.mean()
+        errors.append(e)
+
+    return errors, meanErrorsPerTrack
+
 
 
 def triangulateMultiView(pointTracks, camPoses, camParams):
@@ -62,9 +86,7 @@ def triangulateMultiView(pointTracks, camPoses, camParams):
                    and 'Location'.
     camParams      Camera parameters
 
-    Output is also a dictionary with,
-        Key:       index of the keypoint in the first image (the test image)
-        Value:     A 3D points in the world frame
+    Output is a numpy array with all the 3D points in order.
     '''
     numTracks = len(pointTracks)
     points3d  = np.zeros((numTracks, 3))
@@ -84,9 +106,9 @@ def triangulateMultiView(pointTracks, camPoses, camParams):
         points3d[i, :] = triangulateOnePoint(track, cameraMatrices)
 
     # TODO: calculate the reprojection errors
-    # errors = reprojectionErrors(points3d, cameraMatrices, pointTracks)
+    _, errors = reprojectionErrors(points3d, cameraMatrices, pointTracks)
 
-    return points3d
+    return points3d, errors
 
 
 # Test case
