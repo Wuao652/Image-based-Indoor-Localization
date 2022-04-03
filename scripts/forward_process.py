@@ -4,27 +4,8 @@ from utils.dataloader_new import load_TUM_data
 from utils.keyframes_selection import selectimages
 from utils.triangulateMultiView import triangulateMultiView
 from utils.cameraParams import generateIntrinsics
+from utils.vl_func import vl_ubcmatch
 import matplotlib.pyplot as plt
-
-# from cyvlfeat.sift import sift as vlsift
-
-
-def vl_ubcmatch(template_descriptors, current_img_descriptors, match_thresh=1.5):
-    """
-    :param template_descriptors:
-    :param current_img_descriptors:
-    :param match_thresh:
-    :return:
-    """
-    flann_params = dict(algorithm=1, trees=4)
-    flann = cv2.flann_Index(current_img_descriptors, flann_params)
-    idx, dist = flann.knnSearch(template_descriptors, 2, params={})
-    del flann
-    matches = np.c_[np.arange(len(idx)), idx[:, 0]]
-    pass_filter = dist[:, 0]*match_thresh < dist[:, 1]
-    matches = matches[pass_filter]
-
-    return matches
 
 def plot_imgs(images):
     """
@@ -94,6 +75,8 @@ if __name__ == "__main__":
     print(len(kp2))
     print(len(kp3))
 
+    # Here is an example on how to use vl_ubcmatch
+    # ubc_matches = vl_ubcmatch(des1, des2)
 
     bf = cv2.BFMatcher()
     # Use these two matches to get a track
