@@ -73,26 +73,30 @@ if __name__ == "__main__":
     nImgList = [data_dict['train_images'][i] for i in nImgIndList]
     print("Start to load img")
     # plot_imgs(nImgList)
+# The original implementation
+    # Iprev = cv2.imread(nImgList[0])
+    # Iprev = cv2.cvtColor(Iprev, cv2.COLOR_BGR2GRAY)
+    # Ipost = cv2.imread(nImgList[1])
+    # Ipost = cv2.cvtColor(Ipost, cv2.COLOR_BGR2GRAY)
+
+# just to test the possible combination of cv2 + gtsam
     Iprev = cv2.imread(nImgList[0])
     Iprev = cv2.cvtColor(Iprev, cv2.COLOR_BGR2GRAY)
     Ipost = cv2.imread(nImgList[1])
     Ipost = cv2.cvtColor(Ipost, cv2.COLOR_BGR2GRAY)
-# cyvlfeat
-    # kp1, des1 = vlsift(Iprev, edge_thresh=20, n_octaves=4, n_levels=6, compute_descriptor=True, float_descriptors=True)
-    # kp2, des2 = vlsift(Ipost, edge_thresh=20, n_octaves=4, n_levels=6, compute_descriptor=True, float_descriptors=True)
-# opencv
-    # sift = cv2.SIFT_create(nOctaveLayers=6, edgeThreshold=20)
-    # kp1, des1 = sift.detectAndCompute(Iprev, None)
-    # kp2, des2 = sift.detectAndCompute(Ipost, None)
-    # kp1_pt = [i.pt for i in kp1]
-    # kp2_pt = [i.pt for i in kp2]
-    # bf = cv2.BFMatcher()
-    # matches = bf.match(des1, des2)
-    # pts_1, pts_2 = [], []
-    # for i in range(len(matches)):
-    #     pts_1.append(kp1[matches[i].queryIdx].pt)
-    #     pts_2.append(kp2[matches[i].trainIdx].pt)
-    # pts_1, pts_2 = np.array(pts_1), np.array(pts_2)
+
+    sift = cv2.SIFT_create(nOctaveLayers=6, edgeThreshold=20)
+    kp1, des1 = sift.detectAndCompute(Iprev, None)
+    kp2, des2 = sift.detectAndCompute(Ipost, None)
+    kp1_pt = [i.pt for i in kp1]
+    kp2_pt = [i.pt for i in kp2]
+    bf = cv2.BFMatcher()
+    matches = bf.match(des1, des2)
+    pts_1, pts_2 = [], []
+    for i in range(len(matches)):
+        pts_1.append(kp1[matches[i].queryIdx].pt)
+        pts_2.append(kp2[matches[i].trainIdx].pt)
+    pts_1, pts_2 = np.array(pts_1), np.array(pts_2)
     # match_plot = cv2.drawMatches(Iprev, kp1, Ipost, kp2, matches, None, flags=2)
     # plt.imshow(match_plot), plt.show()
 
