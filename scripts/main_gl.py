@@ -2,6 +2,11 @@ import numpy as np
 import cv2
 from utils.dataloader_new import load_TUM_data
 from utils.keyframes_selection import selectimages
+from utils.mathfunc import *
+
+### TODO: Need to load vlfeat, check if there exists python wrapper
+import cyvlfeat as vl
+
 
 class camera():
     def __init__(self, intrinsics, position, orientation):
