@@ -11,7 +11,6 @@ import matplotlib.pyplot as plt
 
 def vl_ubcmatch(template_descriptors, current_img_descriptors, match_thresh=1.5):
     """
-
     :param template_descriptors:
     :param current_img_descriptors:
     :param match_thresh:
@@ -29,7 +28,6 @@ def vl_ubcmatch(template_descriptors, current_img_descriptors, match_thresh=1.5)
 
 def plot_imgs(images):
     """
-
     :param images:
     :return:
     """
