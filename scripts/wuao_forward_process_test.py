@@ -85,7 +85,8 @@ if __name__ == "__main__":
         for j in range(matches.shape[0]):
             queryIdx, trainIdx = matches[j]
             pt = kp2[trainIdx].pt
-            tracks[queryIdx].append((nImgIndList[i-1], pt))
+            # tracks[queryIdx].append((nImgIndList[i-1], pt))
+            tracks[queryIdx].append((i-1, pt))
 
     print("The total matching results:")
     print(len(tracks))
@@ -100,19 +101,39 @@ if __name__ == "__main__":
     camParams = generateIntrinsics()
     camPoses = list()
     for c in range(len(nImgIndList)):
-        camPoses.append({'ViewId': nImgIndList[c],
-                         'Orientation': data_dict['train_orientation'][nImgIndList[c]],
+        # camPoses.append({'ViewId': nImgIndList[c],
+        camPoses.append({'ViewId': c,
+                         # Transpose here
+                         'Orientation': data_dict['train_orientation'][nImgIndList[c]].T,
                          'Location': data_dict['train_position'][nImgIndList[c]]})
     print(camPoses)
-
+    
+    # print(list(tracks.keys())[0])
+    # print(tracks[1])
+    test_tracks = {0: [(0, (393.976501464844, 334.523040771484)),
+                       (1, (387.846374511719, 335.493988037109)),
+                       (3, (369.973510742188, 342.951934814453)),
+                       (6, (429.238983154297, 274.907409667969))],
+                   1: [(3, (62.4908638000488, 352.728759765625)),
+                       (6, (134.445571899414, 278.729431152344))],
+                   2: [(2, (119.998207092285, 467.221679687500)),
+                       (5, (116.117393493652, 444.217376708984)),
+                       (6, (214.065246582031, 385.179901123047))]}
 
     xyz, errors = triangulateMultiView(tracks, camPoses, camParams)
 
-    print(xyz)
-    print(errors)
+    # print(xyz)
+    # print(errors)
+    # error cut
+    xyz = xyz[(errors<5).reshape(-1)]
+
     plt.figure()
-    plt.axes(projection='3d')
-    plt.scatter(xyz[:, 0], xyz[:, 1], xyz[:, 2])
+    ax = plt.axes(projection='3d')
+    ax.scatter3D(xyz[:, 0], xyz[:, 1], xyz[:, 2])
+    ax.set_zlim3d(-2, 2)
     plt.xlim([-8, 4])
     plt.ylim([-8, 4])
     plt.show()
+
+    # plt.axes(projection='3d')
+    # plt.scatter(xyz[:, 0], xyz[:, 1], xyz[:, 2])
