@@ -24,7 +24,87 @@ def plot_imgs(images):
     ax[1][2].imshow(cv2.imread(nImgList[6]))
     ax[1][3].imshow(cv2.imread(nImgList[7]))
     plt.show()
-def process_7scene_SIFT():
+def process_7scene_SIFT(data_dict, i, idx,
+                        camParams, params,
+                        num_images=7, gap=2):
+    """
+    This function is used to triangulate sparse
+    3D map points from the 2D tracking in the training set.
+    Firstly, N images are selected from the training set according
+    to the predict id from the posenet and gap, num_images.
+    Then, sift feature extractor is used to detect the key points
+    and the features in the selected images. Vl_UBC algorithm is used
+    to match the keypoints from the consecutive two images. A track of
+    a 3D point is a list containing the id and its (u, v) projection
+    on the training images. Based on the given 2D tracks, we can recover
+    the position of the key points in the world frame.
+    :param data_dict: the dataset containing images, position, orientation
+    :param i: test image index
+    :param idx: predict result of the posenet
+    :param camParams: camera intrinsic matrix, focal length, distortion
+    :param params: bm, sigma, alpha_m, max_range
+    :param num_images: the number of selected images in the train set.
+    :param gap: gap to select image
+    :return:
+    """
+    # keyframes selection
+    idx_neighbor = selectimages(data_dict['train_position'], data_dict['train_orientation'],
+                                idx, params, num_images)
+    print(idx_neighbor)
+
+    num_img_left = (num_images - 1) / 2
+    nImgIndList = idx_neighbor
+    nImgList = [data_dict['test_images'][i]] + [data_dict['train_images'][i] for i in nImgIndList]
+
+    # init cv2.sift feature extractor
+    sift = cv2.SIFT_create(nOctaveLayers=6, edgeThreshold=20)
+
+    # load the test image
+    Iprev = cv2.imread(nImgList[0])
+    Iprev = cv2.cvtColor(Iprev, cv2.COLOR_BGR2GRAY)
+    kp1, des1 = sift.detectAndCompute(Iprev, None)
+
+    # create tracks to record the total matched pairs
+    tracks = dict()
+    for i in range(len(kp1)):
+        tracks[i] = list()
+
+    for i in range(1, len(nImgList)):
+        Ipost = cv2.imread(nImgList[i])
+        Ipost = cv2.cvtColor(Ipost, cv2.COLOR_BGR2GRAY)
+        kp2, des2 = sift.detectAndCompute(Ipost, None)
+        matches = vl_ubcmatch(des1, des2)
+        # TODO: add RANSAC to eliminate the outliers
+        for j in range(matches.shape[0]):
+            queryIdx, trainIdx = matches[j]
+            pt = kp2[trainIdx].pt
+            # tracks[queryIdx].append((nImgIndList[i-1], pt))
+            tracks[queryIdx].append((i - 1, pt))
+
+    # filter the tracks
+    tracks = {k: v for k, v in tracks.items() if len(v) >= 2}
+
+    # add the camera pose
+    camPoses = list()
+    for c in range(len(nImgIndList)):
+        camPoses.append({'ViewId': c,
+                         # Transpose here
+                         'Orientation': data_dict['train_orientation'][nImgIndList[c]].T,
+                         'Location': data_dict['train_position'][nImgIndList[c]]})
+
+    # triangulate to get the 3d points in the world
+    xyz, errors = triangulateMultiView(tracks, camPoses, camParams)
+
+    # error cut
+    xyz = xyz[(errors < 5).reshape(-1)]
+
+    plt.figure()
+    ax = plt.axes(projection='3d')
+    ax.scatter3D(xyz[:, 0], xyz[:, 1], xyz[:, 2])
+    ax.set_zlim3d(-2, 2)
+    ax.set_xlim3d(-8, 4)
+    ax.set_ylim3d(-8, 4)
+    plt.show()
     pass
 if __name__ == "__main__":
     data_dict, posenet_x_predicted = load_TUM_data('1_desk2')
@@ -36,87 +116,77 @@ if __name__ == "__main__":
     params['alpha_m'] = 3
     params['max_range'] = 100
 
-    observe_ith_position = np.array([1.34420, 0.26860, 1.72490])
-    observe_ith_orientation = np.array([[0.45171, 0.57196, -0.68471],
-                                        [0.89165, -0.26329, 0.36829],
-                                        [0.03037, -0.77688, -0.62892]])
-    observe_init_position = np.array([1.34420, 0.26860, 1.72490])
-    observe_init_orientation = np.array([[0.45171, 0.57196, -0.68471],
-                                        [0.89165, -0.26329, 0.36829],
-                                        [0.03037, -0.77688, -0.62892]])
     i = 0
     idx = 535
-    # keyframes selection
-    idx_neighbor = selectimages(data_dict['train_position'], data_dict['train_orientation'], idx, params, num_images)
-    print(idx_neighbor)
-    num_img_left = (num_images - 1) / 2
-    # train images only
-    nImgIndList = idx_neighbor
-    # The first one is the test image
-    nImgList = [data_dict['test_images'][i]] + [data_dict['train_images'][i] for i in nImgIndList]
-    print("Start to load img")
-    # plot_imgs(nImgList)
-    Iprev = cv2.imread(nImgList[0])
-    Iprev = cv2.cvtColor(Iprev, cv2.COLOR_BGR2GRAY)
-    Ipost = cv2.imread(nImgList[1])
-    Ipost = cv2.cvtColor(Ipost, cv2.COLOR_BGR2GRAY)
-    Ipost1 = cv2.imread(nImgList[2])
-    Ipost1 = cv2.cvtColor(Ipost1, cv2.COLOR_BGR2GRAY)
-
-# opencv
-    sift = cv2.SIFT_create(nOctaveLayers=6, edgeThreshold=20)
-    kp1, des1 = sift.detectAndCompute(Iprev, None)
-    kp2, des2 = sift.detectAndCompute(Ipost, None)
-    kp3, des3 = sift.detectAndCompute(Ipost1, None)
-
-    print(len(kp1))
-    print(len(kp2))
-    print(len(kp3))
-
-    # Here is an example on how to use vl_ubcmatch
-    # ubc_matches = vl_ubcmatch(des1, des2)
-
-    bf = cv2.BFMatcher()
-    # Use these two matches to get a track
-    matches = bf.match(des1, des2)
-    matches1 = bf.match(des1, des3)
-
-    # Loop all the key points in test image
-    tracks = dict()
-
-    # for j in range(10):
-    #     print(matches[j].queryIdx)
-    #     print(matches1[j].queryIdx)
-
-    # for i in range(len(kp1)):
-    for i in range(3): # test 3 points only
-        tracks[i] = list()
-
-        id = matches[i].trainIdx
-        pt = kp2[id].pt
-        tracks[i].append((nImgIndList[0], pt))
-
-        id = matches1[i].trainIdx
-        pt = kp3[id].pt
-        tracks[i].append((nImgIndList[1], pt))
-    print(tracks)
-
     camParams = generateIntrinsics()
-    camPoses = list()
-    camPoses.append({'ViewId': nImgIndList[0],
-                     'Orientation': data_dict['train_orientation'][nImgIndList[0]],
-                     'Location': data_dict['train_position'][nImgIndList[0]]})
 
-    camPoses.append({'ViewId': nImgIndList[1],
-                     'Orientation': data_dict['train_orientation'][nImgIndList[1]],
-                     'Location': data_dict['train_position'][nImgIndList[1]]})
+    process_7scene_SIFT(data_dict, i, idx,
+                        camParams, params,
+                        num_images=7, gap=2)
 
-    print(camPoses)
 
-    xyz, errors = triangulateMultiView(tracks, camPoses, camParams)
-    print(xyz)
-    print(errors)
+    # # keyframes selection
+    # idx_neighbor = selectimages(data_dict['train_position'], data_dict['train_orientation'], idx, params, num_images)
+    #
+    # num_img_left = (num_images - 1) / 2
+    # # train images only
+    # nImgIndList = idx_neighbor
+    # # The first one is the test image
+    # nImgList = [data_dict['test_images'][i]] + [data_dict['train_images'][i] for i in nImgIndList]
+    #
+    # # init cv2.sift feature extractor
+    # sift = cv2.SIFT_create(nOctaveLayers=6, edgeThreshold=20)
+    #
+    # # create tracks to record the total matched pairs
+    # tracks = dict()
+    #
+    # # load the test image
+    # Iprev = cv2.imread(nImgList[0])
+    # Iprev = cv2.cvtColor(Iprev, cv2.COLOR_BGR2GRAY)
+    # kp1, des1 = sift.detectAndCompute(Iprev, None)
+    #
+    # # Loop all the key points in test image
+    # for i in range(len(kp1)):
+    #     tracks[i] = list()
+    #
+    # for i in range(1, len(nImgList)):
+    #     Ipost = cv2.imread(nImgList[i])
+    #     Ipost = cv2.cvtColor(Ipost, cv2.COLOR_BGR2GRAY)
+    #     kp2, des2 = sift.detectAndCompute(Ipost, None)
+    #     matches = vl_ubcmatch(des1, des2)
+    #
+    #     # TODO: add RANSAC to eliminate the outliers
+    #     for j in range(matches.shape[0]):
+    #         queryIdx, trainIdx = matches[j]
+    #         pt = kp2[trainIdx].pt
+    #         # tracks[queryIdx].append((nImgIndList[i-1], pt))
+    #         tracks[queryIdx].append((i - 1, pt))
+    #
+    #
+    # # filter the tracks
+    # tracks = {k: v for k, v in tracks.items() if len(v) >= 2}
+    #
+    # # add the camera pose
+    # camParams = generateIntrinsics()
+    # camPoses = list()
+    # for c in range(len(nImgIndList)):
+    #     camPoses.append({'ViewId': c,
+    #                      # Transpose here
+    #                      'Orientation': data_dict['train_orientation'][nImgIndList[c]].T,
+    #                      'Location': data_dict['train_position'][nImgIndList[c]]})
+    #
+    #
+    # xyz, errors = triangulateMultiView(tracks, camPoses, camParams)
+    #
+    # # error cut
+    # xyz = xyz[(errors < 5).reshape(-1)]
+    #
+    # plt.figure()
+    # ax = plt.axes(projection='3d')
+    # ax.scatter3D(xyz[:, 0], xyz[:, 1], xyz[:, 2])
+    # ax.set_zlim3d(-2, 2)
+    # ax.set_xlim3d(-8, 4)
+    # ax.set_ylim3d(-8, 4)
+    # plt.show()
 
-    # pts_1, pts_2 = np.array(pts_1), np.array(pts_2)
-    # match_plot = cv2.drawMatches(Iprev, kp1, Ipost, kp2, matches, None, flags=2)
-    # plt.imshow(match_plot), plt.show()
+

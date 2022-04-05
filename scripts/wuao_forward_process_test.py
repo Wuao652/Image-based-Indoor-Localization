@@ -91,10 +91,11 @@ if __name__ == "__main__":
     print("The total matching results:")
     print(len(tracks))
     # filter out the tracks with less than 2 points
-    for k in list(tracks.keys()):
-        if len(tracks[k]) < 2:
-            del tracks[k]
+    # for k in list(tracks.keys()):
+    #     if len(tracks[k]) < 2:
+    #         del tracks[k]
 
+    tracks = {k: v for k, v in tracks.items() if len(v) >= 2}
     print("The tracks after the filter")
     print(len(tracks))
     # add the camera pose
@@ -122,8 +123,6 @@ if __name__ == "__main__":
 
     xyz, errors = triangulateMultiView(tracks, camPoses, camParams)
 
-    # print(xyz)
-    # print(errors)
     # error cut
     xyz = xyz[(errors<5).reshape(-1)]
 
@@ -131,8 +130,8 @@ if __name__ == "__main__":
     ax = plt.axes(projection='3d')
     ax.scatter3D(xyz[:, 0], xyz[:, 1], xyz[:, 2])
     ax.set_zlim3d(-2, 2)
-    plt.xlim([-8, 4])
-    plt.ylim([-8, 4])
+    ax.set_xlim3d(-8, 4)
+    ax.set_ylim3d(-8, 4)
     plt.show()
 
     # plt.axes(projection='3d')
