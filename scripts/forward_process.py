@@ -98,13 +98,13 @@ def process_7scene_SIFT(data_dict, i, idx,
     # error cut
     xyz = xyz[(errors < 5).reshape(-1)]
 
-    plt.figure()
-    ax = plt.axes(projection='3d')
-    ax.scatter3D(xyz[:, 0], xyz[:, 1], xyz[:, 2])
-    ax.set_zlim3d(-2, 2)
-    ax.set_xlim3d(-8, 4)
-    ax.set_ylim3d(-8, 4)
-    plt.show()
+    # plt.figure()
+    # ax = plt.axes(projection='3d')
+    # ax.scatter3D(xyz[:, 0], xyz[:, 1], xyz[:, 2])
+    # ax.set_zlim3d(-2, 2)
+    # ax.set_xlim3d(-8, 4)
+    # ax.set_ylim3d(-8, 4)
+    # plt.show()
     pass
 if __name__ == "__main__":
     data_dict, posenet_x_predicted = load_TUM_data('1_desk2')
