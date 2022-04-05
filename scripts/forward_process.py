@@ -95,9 +95,16 @@ def process_7scene_SIFT(data_dict, i, idx,
     # triangulate to get the 3d points in the world
     xyz, errors = triangulateMultiView(tracks, camPoses, camParams)
 
+    pts2d = []
+    for k in tracks.keys():
+        pts2d.append(kp1[k].pt)
+    pts2d = np.array(pts2d)
+
     # error cut
     xyz = xyz[(errors < 5).reshape(-1)]
+    pts2d = pts2d[(errors < 5).reshape(-1)]
 
+    pass
     # plt.figure()
     # ax = plt.axes(projection='3d')
     # ax.scatter3D(xyz[:, 0], xyz[:, 1], xyz[:, 2])
