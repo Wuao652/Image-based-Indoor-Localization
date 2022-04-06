@@ -175,12 +175,10 @@ def optimizationLS(observe_orientation, observe_robotPose, observe_pts2D, observ
     if (1):
         Orient = observe_orientation.T
         x0[3:6, 0] = observe_robotPose
-        # print(Orient)
-        # print(np.size(x0))
-        # print(x0)
+
     print(x0)
     print(Orient)
-    
+
     F, P = CalculateF_LS(observe_orientation, observe_robotPose, observe_pts2D, observe_pts3D, param_num_features,
                          param_k, x0, Orient, False)
 
