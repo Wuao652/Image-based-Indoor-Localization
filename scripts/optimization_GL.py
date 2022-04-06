@@ -10,8 +10,6 @@ from ast import Param
 import numpy as np
 from scipy.linalg import expm
 from numpy.linalg import norm, inv
-import sys
-sys.path.append('.')
 from utils.cameraParams import generateIntrinsics
 from utils.mathfunc import *
 
@@ -160,13 +158,13 @@ def optimizationLS(observe_orientation, observe_robotPose, observe_pts2D, observ
     var_2 = inv(np.conj(J).T @ P @ J)
     var_res = var_1 * var_2
     var = var_res
-    print("var_res\n", var_res)
+    # print("var_res\n", var_res)
 
     x_std = np.sqrt(np.diag(var))  # (6,)
     angle_std = angleDifference_so3(x_std[0:3])
     angle_var = np.power(angle_std, 2)
     position_var = np.power(norm(x_std[3:6]), 2)
-    robotpose = np.conj(x[3:6]).T #
+    robotpose = np.conj(x[3:6]).reshape(3) #
 
     F, _ = CalculateF_LS(observe_pts2D, observe_pts3D, param_num_features, param_k, x, Orient)
     reproerror2 = 0
@@ -185,8 +183,8 @@ if __name__ == "__main__":
     print(f'hello world from optimization')
 
     # obsevation
-    observe_pts2D = np.loadtxt('./data/observe.pts2D.txt')
-    observe_pts3D = np.loadtxt('./data/observe.pts3D.txt')
+    observe_pts2D = np.loadtxt('../data/observe.pts2D.txt')
+    observe_pts3D = np.loadtxt('../data/observe.pts3D.txt')
     observe_orientation = np.array([[0.451706456386172, 0.571960139035106, -0.684706416366890],
                                     [0.891649603806108, -0.263293216519696, 0.368290192873940],
                                     [0.0303687551845320, -0.776877262821905, -0.628919277188167]])
