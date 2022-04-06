@@ -76,8 +76,8 @@ if(isempty(tracks2))
 end
 [xyzPoints,errors] = triangulateMultiview(tracks2,cameraPoses,cameraParams);
 
-figure()
-scatter3(xyzPoints(:, 1), xyzPoints(:, 2), xyzPoints(:, 3))
+% figure()
+% scatter3(xyzPoints(:, 1), xyzPoints(:, 2), xyzPoints(:, 3))
 
 
 idx = errors < 5;

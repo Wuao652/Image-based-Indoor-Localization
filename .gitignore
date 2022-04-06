@@ -5,3 +5,5 @@ chess_train__siamese_FXPAL_output_1.h5py
 matlab/BA_matlab/Main_GL.m~
 data/TUM/*
 .DS_store
+scripts/.cache/
+scripts/__pycache__/optimization_GL.cpython-38.pyc

@@ -84,6 +84,8 @@ def process_7scene_SIFT(data_dict, i, idx,
         Ipost = cv2.cvtColor(Ipost, cv2.COLOR_BGR2GRAY)
         kp2, des2 = sift.detectAndCompute(Ipost, None)
         matches = vl_ubcmatch(des1, des2)
+
+        
         # TODO: add RANSAC to eliminate the outliers
         for j in range(matches.shape[0]):
             queryIdx, trainIdx = matches[j]
