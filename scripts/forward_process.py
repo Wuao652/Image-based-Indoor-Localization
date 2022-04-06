@@ -1,4 +1,5 @@
 import numpy as np
+# import scipy.io as sio # need scipy 1.8.0
 import cv2
 import sys
 sys.path.append('.')
@@ -101,26 +102,34 @@ def process_7scene_SIFT(data_dict, i, idx,
                          'Orientation': data_dict['train_orientation'][nImgIndList[c]].T,
                          'Location': data_dict['train_position'][nImgIndList[c]]})
 
+    ### Test the data from matlab
+    # test_tracks = dict()
+    # mat_data = sio.loadmat('./matlab/BA_matlab/output.mat')['output']
+    # pts2d = list()
+    # for i in range((mat_data.shape[0])//2):
+    #     ind = 2*i
+    #     test_tracks[i] = list()
+    #     for j in range(mat_data[ind][0].shape[1]):
+    #         viewIds = mat_data[ind][0].reshape(-1)
+    #         points = mat_data[ind+1][0]
+    #         if viewIds[j] == 1:
+    #             pts2d.append((points[j][1], points[j][0]))
+    #         else:
+    #             test_tracks[i].append((viewIds[j] - 2, tuple(points[j])))
+    # xyz, errors = triangulateMultiView(test_tracks, camPoses, camParams)
+
     # triangulate to get the 3d points in the world
     xyz, errors = triangulateMultiView(tracks, camPoses, camParams)
 
     pts2d = []
     for k in tracks.keys():
-        pts2d.append(kp1[k].pt)
+        # Exchange the x and y point, why?
+        pts2d.append((kp1[k].pt[1], kp1[k].pt[0]))  
     pts2d = np.array(pts2d)
 
     # error cut
     xyz = xyz[(errors < 5).reshape(-1)]
     pts2d = pts2d[(errors < 5).reshape(-1)]
-
-    ### plot the reconstruct 3d points
-    # plt.figure()
-    # ax = plt.axes(projection='3d')
-    # ax.scatter3D(xyz[:, 0], xyz[:, 1], xyz[:, 2])
-    # ax.set_zlim3d(-2, 2)
-    # ax.set_xlim3d(-8, 4)
-    # ax.set_ylim3d(-8, 4)
-    # plt.show()
 
     robotpose = data_dict['train_position'][idx]
     orientation = data_dict['train_orientation'][idx] #TODO: check transpose
@@ -149,8 +158,7 @@ if __name__ == "__main__":
     results['reproject_error'] = list()
 
     index_list = list()
-    # print(posenet_x_predicted.shape)
-    # for i in range(0, len(data_dict['train_images']), 100):
+    # for i in range(0, min(posenet_x_predicted.shape[0], len(data_dict['train_images'])), 100):
     for i in range(0, 100, 10):
         index_list.append(i)
         idx = int(posenet_x_predicted[i] - 1)
@@ -168,17 +176,18 @@ if __name__ == "__main__":
 
 
     ### plot the final result
-    xyz_gt  = np.array([data_dict['test_position'][i] for i in index_list])
-    xyz_est = np.array(results['pose'])
-    plt.figure()
-    ax = plt.axes(projection='3d')
-    ax.scatter3D(xyz_gt[:, 0], xyz_gt[:, 1], xyz_gt[:, 2], label='Ground Truth')
-    ax.scatter3D(xyz_est[:, 0], xyz_est[:, 1], xyz_est[:, 2], label='Estimation')
-    ax.set_zlim3d(-2, 2)
-    ax.set_xlim3d(-8, 4)
-    ax.set_ylim3d(-8, 4)
-    plt.legend()
-    plt.show()
+    if True:
+        xyz_gt  = np.array([data_dict['test_position'][i] for i in index_list])
+        xyz_est = np.array(results['pose'])
+        plt.figure()
+        ax = plt.axes(projection='3d')
+        ax.scatter3D(xyz_gt[:, 0], xyz_gt[:, 1], xyz_gt[:, 2], label='Ground Truth')
+        ax.scatter3D(xyz_est[:, 0], xyz_est[:, 1], xyz_est[:, 2], label='Estimation')
+        ax.set_zlim3d(-2, 2)
+        ax.set_xlim3d(-8, 4)
+        ax.set_ylim3d(-8, 4)
+        plt.legend()
+        plt.show()
 
 
     # # keyframes selection
