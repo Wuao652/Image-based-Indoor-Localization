@@ -1,20 +1,25 @@
 import numpy as np
 import cv2
+import sys
+sys.path.append('.')
 from utils.dataloader_new import load_TUM_data
 from utils.keyframes_selection import selectimages
 from utils.triangulateMultiView import triangulateMultiView
 from utils.cameraParams import generateIntrinsics
 from utils.vl_func import vl_ubcmatch
+from optimization_GL import optimizationLS
 import matplotlib.pyplot as plt
 
-def plot_imgs(images):
+
+def plot_imgs(nImgList):
     """
-    :param images:
+    :param nImgList:
     :return:
     """
     fig, ax = plt.subplots(2, 4)
     for a in ax.reshape((-1)):
-      a.set_axis_off()
+        a.set_axis_off()
+
     ax[0][0].imshow(cv2.imread(nImgList[0]))
     ax[0][1].imshow(cv2.imread(nImgList[1]))
     ax[0][2].imshow(cv2.imread(nImgList[2]))
@@ -23,7 +28,11 @@ def plot_imgs(images):
     ax[1][1].imshow(cv2.imread(nImgList[5]))
     ax[1][2].imshow(cv2.imread(nImgList[6]))
     ax[1][3].imshow(cv2.imread(nImgList[7]))
+
     plt.show()
+
+
+
 def process_7scene_SIFT(data_dict, i, idx,
                         camParams, params,
                         num_images=7, gap=2):
@@ -52,7 +61,7 @@ def process_7scene_SIFT(data_dict, i, idx,
                                 idx, params, num_images)
     print(idx_neighbor)
 
-    num_img_left = (num_images - 1) / 2
+    num_img_left = (num_images - 1) / 2    #TODO: can we remove this?
     nImgIndList = idx_neighbor
     nImgList = [data_dict['test_images'][i]] + [data_dict['train_images'][i] for i in nImgIndList]
 
@@ -104,7 +113,7 @@ def process_7scene_SIFT(data_dict, i, idx,
     xyz = xyz[(errors < 5).reshape(-1)]
     pts2d = pts2d[(errors < 5).reshape(-1)]
 
-    pass
+    ### plot the reconstruct 3d points
     # plt.figure()
     # ax = plt.axes(projection='3d')
     # ax.scatter3D(xyz[:, 0], xyz[:, 1], xyz[:, 2])
@@ -112,24 +121,64 @@ def process_7scene_SIFT(data_dict, i, idx,
     # ax.set_xlim3d(-8, 4)
     # ax.set_ylim3d(-8, 4)
     # plt.show()
-    pass
+
+    robotpose = data_dict['train_position'][idx]
+    orientation = data_dict['train_orientation'][idx] #TODO: check transpose
+    K = np.array(camParams['IntrinsicMatrix']).T
+
+    return orientation, robotpose, pts2d, xyz, K
+
+
+
 if __name__ == "__main__":
     data_dict, posenet_x_predicted = load_TUM_data('1_desk2')
     gap = 2
     num_images = 7
+
     params = {}
-    params['bm'] = 0.1
-    params['sigma'] = 0.2
-    params['alpha_m'] = 3
+    params['bm']        = 0.1
+    params['sigma']     = 0.2
+    params['alpha_m']   = 3
     params['max_range'] = 100
 
-    i = 0
-    idx = 535
-    camParams = generateIntrinsics()
+    results = dict()
+    results['orient']          = list()
+    results['pose']            = list()
+    results['orient_error']    = list()
+    results['pose_error']      = list()
+    results['reproject_error'] = list()
 
-    process_7scene_SIFT(data_dict, i, idx,
-                        camParams, params,
-                        num_images=7, gap=2)
+    index_list = list()
+    # print(posenet_x_predicted.shape)
+    # for i in range(0, len(data_dict['train_images']), 100):
+    for i in range(0, 100, 10):
+        index_list.append(i)
+        idx = int(posenet_x_predicted[i] - 1)
+        camParams = generateIntrinsics()
+
+        orientation, robotpose, pts2D, pts3D, K = process_7scene_SIFT(data_dict, i, idx,
+                                                                      camParams, params,
+                                                                      num_images=7, gap=2)
+
+        ### the output estimation is a tuple contains (orientation, robotpose, reproerror2, angle_var, position_var)
+        estimation = optimizationLS(orientation, robotpose, pts2D, pts3D, pts3D.shape[0], K)
+
+        for i, key in enumerate(results):
+            results[key].append(estimation[i])
+
+
+    ### plot the final result
+    xyz_gt  = np.array([data_dict['test_position'][i] for i in index_list])
+    xyz_est = np.array(results['pose'])
+    plt.figure()
+    ax = plt.axes(projection='3d')
+    ax.scatter3D(xyz_gt[:, 0], xyz_gt[:, 1], xyz_gt[:, 2], label='Ground Truth')
+    ax.scatter3D(xyz_est[:, 0], xyz_est[:, 1], xyz_est[:, 2], label='Estimation')
+    ax.set_zlim3d(-2, 2)
+    ax.set_xlim3d(-8, 4)
+    ax.set_ylim3d(-8, 4)
+    plt.legend()
+    plt.show()
 
 
     # # keyframes selection
