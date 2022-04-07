@@ -84,9 +84,18 @@ def process_7scene_SIFT(data_dict, i, idx,
         Ipost = cv2.cvtColor(Ipost, cv2.COLOR_BGR2GRAY)
         kp2, des2 = sift.detectAndCompute(Ipost, None)
         matches = vl_ubcmatch(des1, des2)
-
         
-        # TODO: add RANSAC to eliminate the outliers
+        # add RANSAC to eliminate the outliers
+        pts_1, pts_2 = [], []
+        for ii in range(matches.shape[0]):
+            pts_1.append(kp1[matches[ii, 0]].pt)
+            pts_2.append(kp2[matches[ii, 1]].pt)
+        pts_1, pts_2 = np.array(pts_1), np.array(pts_2)
+        _, mask = cv2.findHomography(pts_1, pts_2, cv2.RANSAC)
+        mask_ = np.where(mask != 0)[0]
+        matches = matches[mask_]
+
+
         for j in range(matches.shape[0]):
             queryIdx, trainIdx = matches[j]
             pt = kp2[trainIdx].pt

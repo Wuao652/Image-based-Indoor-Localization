@@ -7,3 +7,4 @@ data/TUM/*
 .DS_store
 scripts/.cache/
 scripts/__pycache__/optimization_GL.cpython-38.pyc
+
