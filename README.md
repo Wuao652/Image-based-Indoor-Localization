@@ -14,6 +14,7 @@ Here is the link to the original [paper](https://arxiv.org/abs/2201.01408)
     - [Keypoint matching](#keypoint-matching)
     - [Triangulation](#triangulation)
     - [Final estimation](#final-estimation)
+  - [Authors](#authors)
 
 
 ## Background
@@ -50,3 +51,6 @@ python SfM.py
 ### Triangulation
 ### Final estimation
 ![](./images/3d_estimation.png)
+
+## Authors
+Wuao Liu, Man Yuan, Wan-Yi Yu, Sairub Naaz, Tamaira Linares
