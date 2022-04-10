@@ -99,6 +99,7 @@ def optimizationLS(observe_orientation, observe_robotPose, observe_pts2D, observ
     for i in range(param_num_features):
         reproerror1 = reproerror1 + np.sqrt(F[2 * i, 0] ** 2 + F[2 * i + 1, 0] ** 2)
     reproerror1 = reproerror1 / param_num_features
+    print(f'Reprojection error before optimization: {reproerror1.item():.4f}')
 
     # ============================  No outlier =========================#
     M = 1E-6
@@ -159,6 +160,10 @@ def optimizationLS(observe_orientation, observe_robotPose, observe_pts2D, observ
     var_res = var_1 * var_2
     var = var_res
     # print("var_res\n", var_res)
+
+    if any(np.diag(var) < 0):
+        print('Bad optimization, skip the image')
+        return None, None, None, None, None
 
     x_std = np.sqrt(np.diag(var))  # (6,)
     angle_std = angleDifference_so3(x_std[0:3])

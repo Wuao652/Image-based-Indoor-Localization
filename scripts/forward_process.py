@@ -8,7 +8,7 @@ from utils.keyframes_selection import selectimages
 from utils.triangulateMultiView import triangulateMultiView
 from utils.cameraParams import generateIntrinsics
 from utils.vl_func import vl_ubcmatch
-from optimization_GL import optimizationLS
+from scripts.optimization_GL import optimizationLS
 import matplotlib.pyplot as plt
 
 

@@ -1,50 +1,69 @@
-import cv2
-import random
 import numpy as np
 import matplotlib.pyplot as plt
-import scipy.io
 from utils.cameraParams import generateIntrinsics
+from utils.dataloader_new import load_TUM_data
+from scripts.forward_process import process_7scene_SIFT
+from scripts.optimization_GL import optimizationLS
 
+def SfM(dataset='TUM', subdataset='1_desk2', plot_on=False):
+    # print("hello world from SfM!")
+    ### Load dataset
+    if dataset == 'TUM':
+        data_dict, posenet_x_predicted = load_TUM_data(subdataset)
+    gap = 2
+    num_images = 7
 
-img1 = cv2.imread('./data/image1.jpg')
-img2 = cv2.imread('./data/image2.jpg')
-img3 = cv2.imread('./data/image3.jpg')
-img4 = cv2.imread('./data/image4.jpg')
-img5 = cv2.imread('./data/image5.jpg')
+    ### parameters dictionary
+    params = {}
+    params['bm']        = 0.1
+    params['sigma']     = 0.2
+    params['alpha_m']   = 3
+    params['max_range'] = 100
 
-def plot_imgs():
-    fig, ax = plt.subplots(3, 2)
-    for a in ax.reshape((-1)):
-      a.set_axis_off()
-    ax[0][0].imshow(img1)
-    ax[0][1].imshow(img2)
-    ax[1][0].imshow(img3)
-    ax[1][1].imshow(img4)
-    ax[2][0].imshow(img5)
-    plt.show()
-# plot_imgs()
+    ### results dictionary
+    results = dict()
+    results['orient']          = list()
+    results['pose']            = list()
+    results['orient_error']    = list()
+    results['pose_error']      = list()
+    results['reproject_error'] = list()
+
+    index_list = list()
+    # for i in range(0, min(posenet_x_predicted.shape[0], len(data_dict['train_images'])), 100):
+    for i in range(0, 100, 10):
+        idx = int(posenet_x_predicted[i] - 1)
+        camParams = generateIntrinsics()
+
+        ### Forward process for retrieves 3D points
+        orientation, robotpose, pts2D, pts3D, K = process_7scene_SIFT(data_dict, i, idx,
+                                                                      camParams, params,
+                                                                      num_images=num_images, gap=gap)
+
+        ### Backward intersection and optimization
+        ### the output estimation is a tuple contains (orientation, robotpose, reproerror2, angle_var, position_var)
+        estimation = optimizationLS(orientation, robotpose, pts2D, pts3D, pts3D.shape[0], K)
+
+        if estimation[0] is None:
+            continue
+        else:
+            index_list.append(i)
+            for i, key in enumerate(results):
+                results[key].append(estimation[i])
+
+    ### plot the final results
+    if plot_on:
+        xyz_gt  = np.array([data_dict['test_position'][i] for i in index_list])
+        xyz_est = np.array(results['pose'])
+        plt.figure()
+        ax = plt.axes(projection='3d')
+        ax.scatter3D(xyz_gt[:, 0], xyz_gt[:, 1], xyz_gt[:, 2], label='Ground Truth')
+        ax.scatter3D(xyz_est[:, 0], xyz_est[:, 1], xyz_est[:, 2], label='Estimation')
+        ax.set_zlim3d(0, 2)
+        ax.set_xlim3d(-4, 4)
+        ax.set_ylim3d(-4, 4)
+        plt.legend()
+        plt.show()
 
 
 if __name__ == '__main__':
-    print("hello world from SfM!")
-    intrinsics = generateIntrinsics()
-    # matlab_img = scipy.io.loadmat('./data/images.mat')
-    # matlab_img = matlab_img['images']
-
-    # Convert the images to grayscale.
-    images = []
-    for i in [img1, img2, img3, img4, img5]:
-        gray = cv2.cvtColor(i, cv2.COLOR_BGR2GRAY)
-        images.append(gray)
-    sift = cv2.xfeatures2d.SIFT_create()
-    # Find keypoints and descriptors directly
-    kp, des = sift.detectAndCompute(images[0], None)
-    print(len(kp))
-
-
-
-
-
-
-
-
+    SfM(dataset='TUM', subdataset='1_desk2', plot_on=True)
