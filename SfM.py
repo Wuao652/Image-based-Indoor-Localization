@@ -30,7 +30,7 @@ def SfM(dataset='TUM', subdataset='1_desk2', plot_on=False):
 
     index_list = list()
     # for i in range(0, min(posenet_x_predicted.shape[0], len(data_dict['train_images'])), 100):
-    for i in range(0, 100, 5):
+    for i in range(0, 100, 10):
         idx = int(posenet_x_predicted[i] - 1)
         camParams = generateIntrinsics()
 

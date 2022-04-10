@@ -1,6 +1,7 @@
 import numpy as np
 import h5py
 import glob
+import os
 from scipy.spatial.transform import Rotation as R
 def load_TUM_data(scene):
     """
@@ -13,6 +14,8 @@ def load_TUM_data(scene):
     """
     print('=>>>>>>>>>>>>>>>>>>>>>>Loading TUM dataset', scene)
     path = '../data/TUM/' + scene
+    if not os.path.exists(path):
+        path = './data/TUM/' + scene
     data_dict = {}
 
     print('=>>>>>>>>>>>>>>>>>>>>>>Loading training data')
