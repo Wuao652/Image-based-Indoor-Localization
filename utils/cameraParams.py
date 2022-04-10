@@ -21,9 +21,8 @@ def generateIntrinsics():
                                      [0.              ,    516.500000000000,      0.],
                                      [318.600000000000,	   255.300000000000,  	  1.]]
 
-
-
-
     return intrinsics
+
+
 if __name__ == '__main__':
     intrinsics = generateIntrinsics()

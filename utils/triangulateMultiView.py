@@ -1,6 +1,6 @@
-### Rewrite the triangulateMultiview.m in matlab
+### Retrieve 3D points
+### idea from https://ieeexplore.ieee.org/document/8967077
 import numpy as np
-import scipy
 
 def cameraMatrix(camParams, Rotation, translation):
     '''

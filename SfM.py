@@ -30,7 +30,7 @@ def SfM(dataset='TUM', subdataset='1_desk2', plot_on=False):
 
     index_list = list()
     # for i in range(0, min(posenet_x_predicted.shape[0], len(data_dict['train_images'])), 100):
-    for i in range(0, 100, 10):
+    for i in range(0, 100, 5):
         idx = int(posenet_x_predicted[i] - 1)
         camParams = generateIntrinsics()
 
@@ -38,6 +38,10 @@ def SfM(dataset='TUM', subdataset='1_desk2', plot_on=False):
         orientation, robotpose, pts2D, pts3D, K = process_7scene_SIFT(data_dict, i, idx,
                                                                       camParams, params,
                                                                       num_images=num_images, gap=gap)
+
+        ### Need enough of 3D points for backward intersection
+        if pts3D.shape[0] < 3:
+            continue
 
         ### Backward intersection and optimization
         ### the output estimation is a tuple contains (orientation, robotpose, reproerror2, angle_var, position_var)

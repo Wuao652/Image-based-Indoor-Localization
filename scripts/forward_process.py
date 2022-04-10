@@ -95,7 +95,6 @@ def process_7scene_SIFT(data_dict, i, idx,
         mask_ = np.where(mask != 0)[0]
         matches = matches[mask_]
 
-
         for j in range(matches.shape[0]):
             queryIdx, trainIdx = matches[j]
             pt = kp2[trainIdx].pt
