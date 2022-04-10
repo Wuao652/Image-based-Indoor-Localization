@@ -48,6 +48,9 @@ python SfM.py
 
 ## Some of the Results
 ### Keypoint matching
+![](./images/kfs_1.png)
+![](./images/kfs_2.png)
+![](./images/kfs_3.png)
 ### Triangulation
 ### Final estimation
 ![](./images/3d_estimation.png)
