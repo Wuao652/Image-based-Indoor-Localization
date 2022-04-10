@@ -52,8 +52,9 @@ python SfM.py
 ![](./images/kfs_2.png)
 ![](./images/kfs_3.png)
 ### Triangulation
-### Final estimation
 ![](./images/3d_estimation.png)
+### Final estimation
+
 
 ## Authors
 Wuao Liu, Man Yuan, Wan-Yi Yu, Sairub Naaz, Tamaira Linares
