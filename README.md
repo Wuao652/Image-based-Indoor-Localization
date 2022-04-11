@@ -40,8 +40,8 @@ For running this package, you need the following dependences (just use pip or co
 
 
 ## Download Dataset
-Currently this package can only handle the TUM dataset `1_desk2` subset, you can download the data [here](https://vision.in.tum.de/data/datasets/rgbd-dataset/download#freiburg1_desk2).
-Once you donwload the dataset, you have to put it under the folder `data/TUM/1_desk2`. If you don't have such a folder, just make a new one by your self!
+Currently, this package can only handle the TUM dataset, for example `1_desk2` subset, you can download the data [here](https://vision.in.tum.de/data/datasets/rgbd-dataset/download#freiburg1_desk2).
+Once you download the dataset, you have to put it under the folder `data/TUM/1_desk2`. If you don't have such a folder, just make a new one by yourself! You may also need the pre-trained CNN model, please contact the contributor for a pre-trained model or you can train the model by your self too!
 
 
 ## How to Run?
