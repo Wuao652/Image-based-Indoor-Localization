@@ -29,8 +29,8 @@ The original paper fuses the CNN model and the probabilistic motion model to pre
 ## Installation
 The code is totally in python, the set up for this repo is very easy. 
 ```
-git clone https://github.com/Wuao652/SfM-demo.git
-cd SfM-demo
+git clone https://github.com/Wuao652/Image-based-Indoor-Localization.git
+cd Image-based-Indoor-Localization
 ```
 For running this package, you need the following dependences (just use pip or conda to install them),
 - `numpy, scipy` for dealing math and array calculation.
