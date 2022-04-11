@@ -47,6 +47,8 @@ python SfM.py
 ```
 
 ## Some of the Results
+### General framework
+![](./images/relocate.png)
 ### Keypoint matching
 ![](./images/kfs_1.png)
 ![](./images/kfs_2.png)
