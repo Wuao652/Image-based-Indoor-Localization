@@ -52,10 +52,14 @@ python SfM.py
 
 ## Some of the Results
 ### Keypoint matching
+This part shows an example of what the keypoint matching looks like,
 ![](./images/kfs_1.png)
+The following figure shows the selected keypoint,
 ![](./images/kfs_2.png)
+The following figure shows the final matching result,
 ![](./images/kfs_3.png)
 ### Final estimation
+This plot shows the final estimation result for the `desk2` subset of `TUM` dataset,
 ![](./images/3d_estimation.png)
 
 
