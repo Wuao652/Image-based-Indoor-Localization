@@ -55,8 +55,10 @@ python SfM.py
 ### Keypoint matching
 This part shows an example of what the keypoint matching looks like,
 ![](./images/kfs_1.png)
+
 The following figure shows the selected keypoint,
 ![](./images/kfs_2.png)
+
 The following figure shows the final matching result,
 ![](./images/kfs_3.png)
 
