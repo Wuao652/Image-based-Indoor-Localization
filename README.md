@@ -34,10 +34,10 @@ cd Image-based-Indoor-Localization
 ```
 For running this package, you need the following dependences (just use pip or conda to install them),
 - `numpy, scipy` for dealing math and array calculation.
-- `tensorflow` for CNN model training
+- - `siamese_zone/tf2-gpu.yml` can help create a conda environment for CNN model training.
 - `h5py` for reading pretrained CNN model.
-- `matplotlib` for ploting
-- `opencv-contrib-python` for image processing
+- `matplotlib` for ploting.
+- `opencv-contrib-python` for image processing.
 
 
 ## Download Dataset
